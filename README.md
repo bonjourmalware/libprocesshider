@@ -1,12 +1,16 @@
-libprocesshider
-===============
+libprocesshider (forked)
+========================
+
+## Fork additions
+
++ The module can blacklists an array of processes
 
 Hide a process under Linux using the ld preloader.
 
 Full tutorial available at https://sysdigcloud.com/hiding-linux-processes-for-fun-and-profit/
 
 In short, compile the library:
-
+M
 ```
 gianluca@sid:~/libprocesshider$ make
 gcc -Wall -fPIC -shared -o libprocesshider.so processhider.c -ldl
